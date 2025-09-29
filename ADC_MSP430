@@ -1,0 +1,22 @@
+#include <msp430.h>
+unsigned int adc_value = 0; // Variable to store adc value
+int main(void)
+{
+    volatile unsigned int i;
+    WDTCTL = WDTPW + WDTHOLD;                 // Stop watchdog timer
+    P1DIR |= (0 << 0); //P1.0 as input
+    P1SEL |= (1 << 0); //p1.0 as Analog Mode
+    ADC10CTL1 |= (0b0000 << 12); //Single conversion for channel 0
+    ADC10CTL0 |= (0b000 << 13); //Reference Vcc=VR+ ,Vss=VR-
+    ADC10CTL0 |= (0b11 << 11); //Sample time 64 Clkcycles (if 1MHz = ~64us)
+    ADC10CTL0 |= (1 << 4); //ADC ON
+    for(i=0;i<5000;i++); //Delay for conversion
+
+    while(1)
+    {
+        ADC10CTL0 |= (0b11 << 0); //ADC Enbale conversion and start off conversion
+        while(!(ADC10CTL1 |= (1 << 0))); //checking for ADC is busy or not
+        adc_value = ADC10MEM; //Stored the adc value in variable
+        for(i=0;i<5000;i++);
+  }
+}
