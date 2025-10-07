@@ -1,0 +1,33 @@
+#include<MSP430.h>
+unsigned int adc_value0 = 0;
+unsigned int adc_value1 = 0;
+float voltage_0;
+float voltage_1;
+
+int main()
+{
+  unsigned int i; //initialize the variable
+  WDTCTL = WDTPW + WDTHOLD;  //Stop watchdog timer
+  P1DIR |= (0b000 << 0); //Configure p1.0 and 1.2 as inpt
+  ADC10AE0 |= (0b101 << 0); //Enable Analog Mode for P1.0 and P1.2
+  ADC10CTL0 |= (1 << 4); //ADC10 ON
+  ADC10CTL0 |= (0b11 << 11); //64ADC CLK Pluses
+  ADC10CTL0 |= (1 << 7); //Enable Multiple sample conversion (MSC)
+  ADC10CTL1 |= (0b0000 << 12); //Selected P1.0 as First input channel
+  ADC10CTL1 |= (0b01 << 1); //Enable Conversion Sequence mode
+  ADC10DTC1 = 2; //2 Conversion
+  ADC10SA = (unsigned int)&adc_value0; //Stores the adc value to the variable
+  
+  for(i=0; i<2000; i++); //Small delay
+
+  while(1)
+  {
+    ADC10CTL0 |= (0b11 << 0); //To enable and Start of conversion
+    while(!(ADC10CTL1 << 0)); //Checking if ADC is busy or not
+
+    for(i=0; i<2000; i++); //small delay
+    voltage_0 = adc_value0*3.3/1023;
+    voltage_1 = adc_value1*3.3/1023;
+  }
+
+}
